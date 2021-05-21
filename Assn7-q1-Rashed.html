@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styling.css" />
+    <title>Question 1</title>
+</head>
+<body>
+
+    <div class="lang"> 
+        <a id="en" class="lanOpt headButt high" href="#"><img src="images/en.jpg" alt="english language"> En</a>
+        <a id="fr" class="lanOpt headButt" href="#"><img src="images/fr.jpg" alt="english language"> Fr</a>
+    </div>
+
+    <div class="add"> 
+        <a class="headButt" href="#"><img src="images/add.png" alt="english language"> Add New</a>
+    </div>
+    <header>
+    <div><h1>
+        Current Weather
+    </h1></div>
+
+    
+
+   </header>
+    <main>
+        
+        <content>
+
+        </content>
+    </main>
+    <footer></footer>
+
+    <script>
+           
+           //Note: I have definitely got carried over with this, but I was enjoying it, so I kept going.
+            var language = "en"
+           
+        
+            var xhttp;
+            var cities =  ["Toronto", "Oakville"]
+
+            cities.forEach(city => {
+                addCity(city)                
+            });
+            
+            document.getElementsByClassName("add")[0].addEventListener('click',function() {
+                var city = prompt("Enter City:");
+                addCity(city)
+            },false)
+
+
+
+        function addCity (city) {
+                
+                var cityDiv = document.createElement("div")
+                cityDiv.city = city;
+                cityDiv.setAttribute("class","cityDiv")
+                document.getElementsByTagName("content")[0].appendChild(cityDiv)
+
+                var btnReload = document.createElement("button")
+            
+                btnReload.type = "button"
+                btnReload.setAttribute("class","btnReload")
+                btnReload.addEventListener('click', function() {
+
+                    loadWeatherbyCity(city, cityDiv)
+                }, false)
+                
+                cityDiv.appendChild(btnReload)
+                
+                var headerDiv = document.createElement("div")
+                headerDiv.appendChild(document.createTextNode(city))
+                headerDiv.setAttribute("class","headerDiv")
+                cityDiv.appendChild(headerDiv)
+
+                var updatedDiv = document.createElement("div")
+                updatedDiv.appendChild(document.createTextNode("Updated:" ))
+                updatedDiv.setAttribute("class","updatedDiv")
+                cityDiv.appendChild(updatedDiv)
+                
+
+                var perishDiv = document.createElement("div")
+                perishDiv.appendChild(document.createTextNode("Loading failed, please Reload"))
+                perishDiv.setAttribute("class","perishDiv")
+                cityDiv.appendChild(perishDiv)
+
+                loadWeatherbyCity(city, cityDiv)
+        }
+
+        
+
+        function loadWeatherbyCity(city, cityDiv){
+            
+            xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var date = new Date()
+                        
+                            
+                            
+                        var updateTxt = cityDiv.getElementsByClassName("updatedDiv")[0]
+                        cityDiv.getElementsByClassName("updatedDiv")[0].innerHTML = "<b>Updated:</b> " + checkTime(date.getHours())+ ":" + checkTime(date.getMinutes());
+                        updateEffect(updateTxt)
+                        
+                        
+                        var jsonDoc = JSON.parse(xhttp.responseText);
+                        
+                        
+                        console.log(jsonDoc)
+
+                        jsonDoc
+                        var perishDiv = cityDiv.getElementsByClassName("perishDiv")[0]
+                        perishDiv.innerHTML = " "
+
+                        var tempDiv = document.createElement("div")
+                        tempDiv.innerHTML = parseInt(jsonDoc.main.temp) + "&#176;"
+                        tempDiv.className = 'tempDiv'
+                        perishDiv.appendChild(tempDiv)
+
+
+                        var iconDiv = document.createElement("div")
+                            iconDiv.className = 'iconDiv'
+                            perishDiv.appendChild(iconDiv) 
+
+                        jsonDoc.weather.forEach(element => {
+                             
+
+                                var pIcon = document.createElement("img")
+                                pIcon.setAttribute('src', 'http://openweathermap.org/img/wn/'+ element.icon +'@2x.png')
+                                pIcon.className = 'pIcon'
+                                iconDiv.appendChild(pIcon)  
+                                updateEffect(iconDiv)
+                        });
+
+                                
+
+                        
+                        var descDiv = document.createElement("div")
+                        var descCollect = "";
+                        for (let index = 0; index < jsonDoc.weather.length; index++) {
+                            descCollect += jsonDoc.weather[index].description;
+                            if (index != jsonDoc.weather.length -1) descCollect += " & "
+                        }
+                        
+                        englishMenu = {"description": "Description","min":"Min","max":"Max","feelsLike":"Feels Like","windSpeed":"Wind Speed","humidity":"Humidity"}
+                        frenchMenu= {"description": "La Description","min":"Min","max":"Max","feelsLike":"Se Sentir","windSpeed":"Vitesse Du Vent","humidity":"Humidité"}
+                        var menu
+                        language == "en" ? menu = englishMenu: menu = frenchMenu;
+
+
+                        descDiv.innerHTML = "<B>"+ menu.description +": </B> " +  descCollect + "<br />"
+                                            + "<B>" + menu.humidity +" : </B> " +  jsonDoc.main.humidity +   "%<br />"
+                                            + "<B>" + menu.windSpeed +" : </B> " +  jsonDoc.wind.speed +   " Km/hr<br />"
+                                            + "<B>"+ menu.min  +" : </B> " + jsonDoc.main.temp_min + "&#176;c<B>, "+ menu.max +" : </B> " +  jsonDoc.main.temp_max +   "&#176;c<br />"
+                                            + "<B>" + menu.feelsLike +" : </B> " +  jsonDoc.main.feels_like +   "&#176;c<br />"
+
+                        perishDiv.appendChild(descDiv)
+                            
+
+                        
+                        updateEffect(tempDiv)
+                        updateEffect(descDiv)
+                            
+                            
+                        
+                    }
+                }
+                xhttp.open("GET", "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=810b3e648760e354f1b750c25d353419" + "&lang=" + language, true);
+                xhttp.send();    
+        }
+
+
+        
+
+        
+
+        function highlight(lanOpt) {
+            
+        }
+
+        function checkTime(i) {
+            return (i < 10) ? "0" + i : i;
+        }
+
+        function updateEffect(element) {
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,0)"}, 20);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,.2)"}, 40);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,.3)"}, 60);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,.3)"}, 80);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,.3)"}, 100);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,.3)"}, 120);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,.2)"}, 140);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,.1)"}, 160);
+            setTimeout(function(){element.style.backgroundColor = "rgba(256,256,256,0)"}, 180);
+        }
+        
+
+    </script>
+
+    <script>
+         var languages = ["en", "fr"]
+            let count = 0;
+            languages.forEach(lang => {
+                
+                document.getElementsByClassName("lanOpt")[count].addEventListener('click',function() {    
+                    language = lang;
+                    switch (this.id) {
+                        case "en":
+                            document.getElementsByClassName("lanOpt")[0].setAttribute("class", "lanOpt headButt high")
+                            document.getElementsByClassName("lanOpt")[1].setAttribute("class", "lanOpt headButt")
+                            break;
+                        case "fr":
+                            document.getElementsByClassName("lanOpt")[0].setAttribute("class", "lanOpt headButt")
+                            document.getElementsByClassName("lanOpt")[1].setAttribute("class", "lanOpt headButt high")
+                            break;
+                    }
+                }, false)
+                count++;
+            ;
+                
+            })
+    </script>
+</body>
+</html>
